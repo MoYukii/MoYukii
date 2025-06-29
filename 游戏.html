@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模拟人生 - 从出生开始</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #e0ded8, #d1d0cb);
+            color: #5a5a5a;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .game-container {
+            width: 100%;
+            max-width: 1000px;
+            background: #f5f4f0;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        header {
+            background: linear-gradient(to right, #8fa5b5, #a3b8c7);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.92;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .content-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            padding: 30px;
+            min-height: 500px;
+        }
+        
+        @media (max-width: 768px) {
+            .content-area {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .panel-title {
+            color: #7a9ca5;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e0dcd7;
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        /* 创建角色界面 */
+        .character-creation {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .creation-title {
+            font-size: 2.2rem;
+            color: #7a9ca5;
+            margin-bottom: 30px;
+        }
+        
+        .creation-form {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #6a7b84;
+            font-size: 1.1rem;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #d1d0cb;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            color: #5a5a5a;
+            transition: all 0.3s;
+        }
+        
+        input:focus, select:focus {
+            border-color: #a3b8c7;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(163, 184, 199, 0.2);
+        }
+        
+        .btn {
+            background: linear-gradient(to right, #a3b8c7, #8fa5b5);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 16px 45px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(to right, #95a9b8, #7e93a3);
+        }
+        
+        /* 游戏界面 */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: #f9f8f5;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            border: 1px solid #eae8e3;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stat-name {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #8a7f78;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #7a9ca5;
+            text-align: center;
+        }
+        
+        .progress-container {
+            height: 10px;
+            background: #e8e6e0;
+            border-radius: 5px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            border-radius: 5px;
+        }
+        
+        .event-log {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f9f8f5;
+            border-radius: 12px;
+            border: 1px solid #eae8e3;
+            max-height: 350px;
+            min-height: 350px;
+        }
+        
+        .event-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.03);
+            animation: fadeIn 0.5s ease;
+            border-left: 5px solid #a3b8c7;
+            position: relative;
+        }
+        
+        .event-time {
+            font-size: 0.9rem;
+            color: #a8a098;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .event-content {
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+        
+        .choices-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .choice-btn {
+            background: linear-gradient(to right, #a8b8a0, #95a892);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 18px 15px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .choice-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(to right, #98a888, #85947e);
+        }
+        
+        .next-year-btn {
+            background: linear-gradient(to right, #c5a9a3, #b49892);
+            grid-column: 1 / -1;
+            padding: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .character-info {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .info-badge {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-badge i {
+            color: #a3b8c7;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .life-stage {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            background: linear-gradient(to right, #c5a9a3, #b49892);
+            color: white;
+            padding: 8px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #8a7f78;
+            background: #f0efeb;
+            font-size: 0.95rem;
+        }
+        
+        .highlight {
+            color: #c5a9a3;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <header>
+            <h1>模拟人生</h1>
+            <div class="subtitle">从出生开始的人生旅程 | 自定义角色 | 多剧情分支</div>
+        </header>
+        
+        <!-- 创建角色界面 -->
+        <section id="character-creation" class="character-creation">
+            <h2 class="creation-title">创建你的人生角色</h2>
+            <div class="creation-form">
+                <div class="form-group">
+                    <label for="name"><i class="fas fa-user"></i> 你的名字</label>
+                    <input type="text" id="name" placeholder="输入你的名字" value="李晓明">
+                </div>
+                
+                <div class="form-group">
+                    <label for="gender"><i class="fas fa-venus-mars"></i> 性别</label>
+                    <select id="gender">
+                        <option value="male">男性</option>
+                        <option value="female">女性</option>
+                        <option value="other">其他</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="background"><i class="fas fa-home"></i> 家庭背景</label>
+                    <select id="background">
+                        <option value="wealthy">富裕家庭</option>
+                        <option value="middle">中产家庭</option>
+                        <option value="working">工薪家庭</option>
+                        <option value="poor">贫困家庭</option>
+                    </select>
+                </div>
+                
+                <button class="btn" onclick="startGame()">
+                    <i class="fas fa-play"></i> 开始人生旅程
+                </button>
+            </div>
+        </section>
+        
+        <!-- 游戏界面 -->
+        <section id="game-interface" class="hidden">
+            <div class="character-info">
+                <div class="info-badge">
+                    <i class="fas fa-user"></i>
+                    <span id="char-name">李晓明</span>
+                </div>
+                <div class="info-badge">
+                    <i class="fas fa-venus"></i>
+                    <span id="char-gender">男性</span>
+                </div>
+                <div class="info-badge">
+                    <i class="fas fa-home"></i>
+                    <span id="char-bg">富裕家庭</span>
+                </div>
+            </div>
+            
+            <div class="life-stage" id="life-stage">婴儿期</div>
+            
+            <div class="content-area">
+                <div class="panel">
+                    <h2 class="panel-title"><i class="fas fa-chart-line"></i> 人生状态</h2>
+                    <div class="stats-container">
+                        <div class="stat-card">
+                            <div class="stat-name"><i class="fas fa-heart"></i> 健康</div>
+                            <div class="stat-value" id="health">85</div>
+                            <div class="progress-container">
+                                <div class="progress-bar" id="health-bar" style="width: 85%; background-color: #a3b8c7;"></div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-name"><i class="fas fa-smile"></i> 快乐</div>
+                            <div class="stat-value" id="happiness">90</div>
+                            <div class="progress-container">
+                                <div class="progress-bar" id="happiness-bar" style="width: 90%; background-color: #a8b8a0;"></div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-name"><i class="fas fa-brain"></i> 智力</div>
+                            <div class="stat-value" id="intelligence">30</div>
+                            <div class="progress-container">
+                                <div class="progress-bar" id="intelligence-bar" style="width: 30%; background-color: #c5a9a3;"></div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-name"><i class="fas fa-handshake"></i> 社交</div>
+                            <div class="stat-value" id="social">25</div>
+                            <div class="progress-container">
+                                <div class="progress-bar" id="social-bar" style="width: 25%; background-color: #b8a8b0;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h2 class="panel-title"><i class="fas fa-history"></i> 人生阶段</h2>
+                    <div class="event-log" id="event-log">
+                        <div class="event-item">
+                            <div class="event-time">出生</div>
+                            <div class="event-content">你在一个阳光明媚的早晨出生了！</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h2 class="panel-title"><i class="fas fa-book"></i> 人生故事</h2>
+                    <div id="story-text" style="flex:1; padding: 15px; line-height: 1.7; font-size: 1.1rem;">
+                        你刚刚来到这个世界，周围的一切都是那么新奇。你的父母看着你，眼中充满了爱和希望...
+                    </div>
+                    
+                    <h2 class="panel-title"><i class="fas fa-crosshairs"></i> 人生选择</h2>
+                    <div class="choices-container" id="choices-container">
+                        <button class="choice-btn" onclick="makeChoice(1)">安静地睡觉</button>
+                        <button class="choice-btn" onclick="makeChoice(2)">大声哭闹</button>
+                        <button class="choice-btn" onclick="makeChoice(3)">好奇地观察周围</button>
+                        <button class="next-year-btn choice-btn" onclick="nextYear()">进入下一年</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <footer>
+            <p>模拟人生文字游戏 | 你的选择将塑造独特的人生轨迹 | 每个决定都可能改变命运</p>
+        </footer>
+    </div>
+
+    <script>
+        // 游戏状态
+        const gameState = {
+            name: "李晓明",
+            gender: "male",
+            background: "wealthy",
+            age: 0,
+            health: 85,
+            happiness: 90,
+            intelligence: 30,
+            social: 25,
+            stage: "infant",
+            events: [
+                { time: "出生", content: "你在一个阳光明媚的早晨出生了！" }
+            ],
+            story: "你刚刚来到这个世界，周围的一切都是那么新奇。你的父母看着你，眼中充满了爱和希望..."
+        };
+        
+        // 故事数据库
+        const storyDatabase = {
+            infant: {
+                wealthy: {
+                    male: [
+                        "你在一个豪华的私人医院出生，周围都是顶尖的医疗团队。你的父亲是知名企业家，母亲是艺术家。",
+                        "你的婴儿房装饰得像童话世界，有专门的保姆24小时照顾你。"
+                    ],
+                    female: [
+                        "你出生在一个富丽堂皇的产房，你的父亲是金融大亨，母亲是著名设计师。",
+                        "你被粉色的丝绸包裹着，整个家族都在为你的诞生而庆祝。"
+                    ],
+                    other: [
+                        "你出生在一个顶级的医疗中心，你的父母都是社会名流。",
+                        "他们为你准备了一个中性色调的婴儿房，充满了艺术气息。"
+                    ]
+                },
+                middle: {
+                    male: [
+                        "你在市中心的医院出生，父母都是白领。他们为你的到来做了精心准备。",
+                        "虽然不算奢华，但你的婴儿用品都是精心挑选的安全产品。"
+                    ],
+                    female: [
+                        "你在社区医院出生，父母都是教师。他们温柔地抱着你，脸上洋溢着幸福。",
+                        "你的婴儿房被布置成温馨的粉色，墙上挂着可爱的动物图画。"
+                    ],
+                    other: [
+                        "你在一个干净的医院出生，父母都是工程师。",
+                        "他们为你准备了舒适的婴儿床和各种益智玩具。"
+                    ]
+                },
+                working: {
+                    male: [
+                        "你在社区诊所出生，父母都是工人。虽然条件简单，但他们用全部的爱迎接你。",
+                        "你的婴儿床是亲戚送的，但被妈妈装饰得很温馨。"
+                    ],
+                    female: [
+                        "你在镇上的医院出生，父亲是司机，母亲是售货员。",
+                        "他们用节省了几个月的钱为你买了新衣服和奶瓶。"
+                    ],
+                    other: [
+                        "你在一个朴素的产房出生，父母在工厂工作。",
+                        "虽然不富裕，但整个大家庭都为你的到来感到高兴。"
+                    ]
+                },
+                poor: {
+                    male: [
+                        "你在家里的土炕上出生，接生婆是村里的老人。父母是贫困农民。",
+                        "你被破旧的毯子包裹着，但母亲温暖的怀抱让你感到安全。"
+                    ],
+                    female: [
+                        "你在漏雨的屋子里出生，母亲独自一人。父亲外出打工还没回来。",
+                        "邻居送来了一些旧衣服和食物，帮助你们度过难关。"
+                    ],
+                    other: [
+                        "你在一个临时搭建的棚屋里出生，父母是流浪艺人。",
+                        "虽然环境艰苦，但父母用歌声欢迎你的到来。"
+                    ]
+                }
+            },
+            toddler: {
+                start: [
+                    "你现在1岁了，开始学习走路和说话。",
+                    "你对周围的一切充满好奇，经常伸手去抓看到的东西。"
+                ],
+                choices: {
+                    1: "你小心翼翼地迈出第一步，虽然摔倒了几次，但很快就能走稳了。",
+                    2: "你特别喜欢说话，整天咿咿呀呀地说个不停。",
+                    3: "你更喜欢观察周围的环境，对每样东西都充满好奇。"
+                }
+            },
+            child: {
+                start: [
+                    "你5岁了，到了上幼儿园的年纪。",
+                    "这个阶段对你的人格发展非常重要。"
+                ]
+            }
+        };
+        
+        // 初始化游戏
+        function startGame() {
+            // 获取玩家输入
+            gameState.name = document.getElementById('name').value;
+            gameState.gender = document.getElementById('gender').value;
+            gameState.background = document.getElementById('background').value;
+            
+            // 更新角色信息
+            document.getElementById('char-name').textContent = gameState.name;
+            
+            const genderText = {
+                'male': '男性',
+                'female': '女性',
+                'other': '其他'
+            };
+            document.getElementById('char-gender').textContent = genderText[gameState.gender];
+            
+            const bgText = {
+                'wealthy': '富裕家庭',
+                'middle': '中产家庭',
+                'working': '工薪家庭',
+                'poor': '贫困家庭'
+            };
+            document.getElementById('char-bg').textContent = bgText[gameState.background];
+            
+            // 生成初始故事
+            generateStory();
+            
+            // 切换到游戏界面
+            document.getElementById('character-creation').classList.add('hidden');
+            document.getElementById('game-interface').classList.remove('hidden');
+        }
+        
+        // 生成故事
+        function generateStory() {
+            const stageData = storyDatabase[gameState.stage][gameState.background][gameState.gender];
+            const story = stageData.join(' ');
+            document.getElementById('story-text').innerHTML = story;
+        }
+        
+        // 更新UI
+        function updateUI() {
+            document.getElementById('health').textContent = gameState.health;
+            document.getElementById('happiness').textContent = gameState.happiness;
+            document.getElementById('intelligence').textContent = gameState.intelligence;
+            document.getElementById('social').textContent = gameState.social;
+            
+            document.getElementById('health-bar').style.width = gameState.health + '%';
+            document.getElementById('happiness-bar').style.width = gameState.happiness + '%';
+            document.getElementById('intelligence-bar').style.width = gameState.intelligence + '%';
+            document.getElementById('social-bar').style.width = gameState.social + '%';
+            
+            document.getElementById('life-stage').textContent = getStageName(gameState.stage);
+            
+            // 更新事件日志
+            const eventLog = document.getElementById('event-log');
+            eventLog.innerHTML = '';
+            gameState.events.slice(0, 10).forEach(event => {
+                const eventElement = document.createElement('div');
+                eventElement.className = 'event-item';
+                eventElement.innerHTML = `
+                    <div class="event-time">${event.time}</div>
+                    <div class="event-content">${event.content}</div>
+                `;
+                eventLog.appendChild(eventElement);
+            });
+        }
+        
+        // 获取阶段名称
+        function getStageName(stage) {
+            const stages = {
+                'infant': '婴儿期',
+                'toddler': '幼儿期',
+                'child': '童年期',
+                'teen': '青少年期',
+                'adult': '成年期'
+            };
+            return stages[stage] || stage;
+        }
+        
+        // 做出选择
+        function makeChoice(choice) {
+            let eventText = "";
+            
+            switch(gameState.stage) {
+                case 'infant':
+                    switch(choice) {
+                        case 1:
+                            eventText = `${gameState.name}安静地睡着了，健康+5`;
+                            gameState.health = Math.min(100, gameState.health + 5);
+                            break;
+                        case 2:
+                            eventText = `${gameState.name}大声哭闹，引起了父母的注意，社交+5`;
+                            gameState.social += 5;
+                            break;
+                        case 3:
+                            eventText = `${gameState.name}好奇地观察周围环境，智力+5`;
+                            gameState.intelligence += 5;
+                            break;
+                    }
+                    break;
+                    
+                case 'toddler':
+                    switch(choice) {
+                        case 1:
+                            eventText = `${gameState.name}在公园里和其他孩子一起玩耍，社交+8`;
+                            gameState.social += 8;
+                            gameState.happiness += 5;
+                            break;
+                        case 2:
+                            eventText = `${gameState.name}专注地玩积木，智力+10`;
+                            gameState.intelligence += 10;
+                            break;
+                        case 3:
+                            eventText = `${gameState.name}在草地上奔跑，健康+7`;
+                            gameState.health = Math.min(100, gameState.health + 7);
+                            break;
+                    }
+                    break;
+                    
+                case 'child':
+                    switch(choice) {
+                        case 1:
+                            eventText = `${gameState.name}参加了数学竞赛，智力+12`;
+                            gameState.intelligence += 12;
+                            break;
+                        case 2:
+                            eventText = `${gameState.name}加入了足球队，健康+10，社交+5`;
+                            gameState.health = Math.min(100, gameState.health + 10);
+                            gameState.social += 5;
+                            break;
+                        case 3:
+                            eventText = `${gameState.name}学习绘画，快乐+8，智力+5`;
+                            gameState.happiness += 8;
+                            gameState.intelligence += 5;
+                            break;
+                    }
+                    break;
+            }
+            
+            // 添加事件
+            gameState.events.push({
+                time: `${gameState.age}岁`,
+                content: eventText
+            });
+            
+            // 更新故事
+            updateStory();
+            
+            updateUI();
+        }
+        
+        // 更新故事
+        function updateStory() {
+            if (gameState.stage === 'infant') {
+                document.getElementById('story-text').innerHTML = `
+                    ${gameState.name}已经${gameState.age}个月大了。根据你的家庭背景：
+                    <br><br>
+                    <span class="highlight">${getFamilyDescription()}</span>
+                    <br><br>
+                    你现在正处于探索世界的阶段，每天都有新的发现。
+                `;
+            } else if (gameState.stage === 'toddler') {
+                document.getElementById('story-text').innerHTML = `
+                    ${gameState.name}已经${gameState.age}岁了！你开始展现出自己的个性。
+                    <br><br>
+                    根据你的性别：<span class="highlight">${getGenderDescription()}</span>
+                    <br><br>
+                    你在这个阶段的学习能力特别强，父母为你${getEducationOpportunity()}。
+                `;
+            } else if (gameState.stage === 'child') {
+                document.getElementById('story-text').innerHTML = `
+                    ${gameState.name}${gameState.age}岁了，开始上${getSchoolType()}。
+                    <br><br>
+                    你的家庭背景让你${getChildhoodExperience()}。
+                    <br><br>
+                    这个阶段对塑造你的性格和价值观非常重要。
+                `;
+            }
+        }
+        
+        // 获取家庭描述
+        function getFamilyDescription() {
+            const descriptions = {
+                'wealthy': `你出生在一个富裕家庭，住在宽敞的大房子里，有私人花园和游泳池。`,
+                'middle': `你出生在一个中产家庭，住在舒适的公寓里，周围环境安全整洁。`,
+                'working': `你出生在一个工薪家庭，住在普通的小区里，生活简单但温馨。`,
+                'poor': `你出生在一个贫困家庭，生活条件比较艰苦，但家人之间的爱很深厚。`
+            };
+            return descriptions[gameState.background];
+        }
+        
+        // 获取性别描述
+        function getGenderDescription() {
+            if (gameState.gender === 'male') {
+                return '家人特别重视你的体能发展，经常带你去户外活动';
+            } else if (gameState.gender === 'female') {
+                return '家人更注重培养你的艺术修养和社交能力';
+            } else {
+                return '家人尊重你的个性发展，提供多种成长机会';
+            }
+        }
+        
+        // 获取教育机会
+        function getEducationOpportunity() {
+            if (gameState.background === 'wealthy') {
+                return '请了私人教师和专业的早教团队';
+            } else if (gameState.background === 'middle') {
+                return '报名了优质的早教中心';
+            } else if (gameState.background === 'working') {
+                return '送你去社区幼儿园';
+            } else {
+                return '只能在家由爷爷奶奶照顾';
+            }
+        }
+        
+        // 获取学校类型
+        function getSchoolType() {
+            if (gameState.background === 'wealthy') {
+                return '私立贵族学校';
+            } else if (gameState.background === 'middle') {
+                return '重点小学';
+            } else if (gameState.background === 'working') {
+                return '公立小学';
+            } else {
+                return '希望小学';
+            }
+        }
+        
+        // 获取童年经历
+        function getChildhoodExperience() {
+            if (gameState.background === 'wealthy') {
+                return '有机会学习钢琴、马术等贵族活动';
+            } else if (gameState.background === 'middle') {
+                return '可以参加各种兴趣班和夏令营';
+            } else if (gameState.background === 'working') {
+                return '需要帮父母做家务，但也有些简单的娱乐';
+            } else {
+                return '需要帮家里干活，有时还要照顾弟弟妹妹';
+            }
+        }
+        
+        // 进入下一年
+        function nextYear() {
+            gameState.age += 1;
+            
+            // 根据年龄更新阶段
+            if (gameState.age === 1) {
+                gameState.stage = 'toddler';
+                gameState.events.push({
+                    time: "成长",
+                    content: `${gameState.name}满1岁了！进入了幼儿期。`
+                });
+            } else if (gameState.age === 5) {
+                gameState.stage = 'child';
+                gameState.events.push({
+                    time: "成长",
+                    content: `${gameState.name}5岁了，开始上${getSchoolType()}。`
+                });
+            } else if (gameState.age === 13) {
+                gameState.stage = 'teen';
+                gameState.events.push({
+                    time: "成长",
+                    content: `${gameState.name}进入青少年期，开始了中学学习。`
+                });
+            } else if (gameState.age === 18) {
+                gameState.stage = 'adult';
+                gameState.events.push({
+                    time: "成年",
+                    content: `${gameState.name}18岁了，正式成年！`
+                });
+            }
+            
+            // 随机事件
+            const randomEvents = [
+                `${gameState.name}过了一个愉快的生日`,
+                `${gameState.name}生了一场小病`,
+                `${gameState.name}在成长中获得了新的技能`,
+                `${gameState.name}交到了新朋友`,
+                `${gameState.name}和家人一起旅行`
+            ];
+            
+            if (Math.random() > 0.3) {
+                const event = randomEvents[Math.floor(Math.random() * randomEvents.length)];
+                gameState.events.push({
+                    time: `${gameState.age}岁`,
+                    content: event
+                });
+            }
+            
+            // 状态变化
+            gameState.health = Math.max(10, gameState.health - Math.floor(Math.random() * 3));
+            gameState.happiness = Math.max(10, gameState.happiness - Math.floor(Math.random() * 5));
+            gameState.intelligence += Math.floor(Math.random() * 8) + 2;
+            gameState.social += Math.floor(Math.random() * 6) + 1;
+            
+            // 更新故事
+            updateStory();
+            
+            updateUI();
+        }
+        
+        // 初始UI更新
+        updateUI();
+    </script>
+</body>
+</html>
