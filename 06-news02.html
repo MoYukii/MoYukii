@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+async function getGitHubRepoCommitDates(owner, repo) {
+    try {
+        // 构建 GitHub API 的请求 URL
+        const url = `https://api.github.com/repos/${owner}/${repo}/commits`;
+        // 使用 fetch 发起请求
+        const response = await fetch(url);
+
+        // 检查响应状态是否正常
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // 将响应数据解析为 JSON
+        const commits = await response.json();
+
+        // 提取所有提交日期
+        const commitDates = commits.map(commit => commit.commit.author.date);
+
+        // 以 JSON 格式返回结果
+        return JSON.stringify(commitDates, null, 2);
+    } catch (error) {
+        console.error('获取提交日期时出错:', error);
+        return null;
+    }
+}
+
+// 使用示例
+// getGitHubRepoCommitDates('octocat', 'Hello-World').then(result => {
+//     if (result) {
+//         console.log(result);
+//     }
+// });
+</html>
